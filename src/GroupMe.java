@@ -8,36 +8,80 @@
  *
  * @author Rider X2
  */
+import org.json.*;
+
 public class GroupMe {
-    private final String baseURL ="https://api.groupme.com/v3";
+
+    public static final String baseURL = "https://api.groupme.com/v3";
     private String token;
     private String groupID;
     private String baseGUID;
-    public static boolean sendMessage(String text, String userID,Boolean isBot) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public static boolean sendMessage(Message msg, String token, Boolean isBot) {
+        JSONObject json = new JSONObject();
+        String url;
+        if (isBot) {
+            url = baseURL + "/post";
+            json = new JSONObject()
+                    .put("bot_id", token)
+                    .put("text", msg.getText())
+                    .put("attachments", msg.getAttachments());
+        } else {
+            System.out.println("Incorrect Method for human/ HTTP ERROR");
+            return false;
+        }
+        if (HTTP.SendPOST(url, new JSONObject(), json.toString()) != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    public static boolean sendMessage(String text, String userID,User[] users, Boolean isBot) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public static boolean sendMessage(Message msg, String token, String groupID, Boolean isBot) {
+        String url = baseURL + "/groups/" + groupID + "/messages";
+        JSONObject message = new JSONObject();
+        message.put("souce_id", msg.getSource_guid());
+        message.put("text", msg.getText());
+        String attachString = "";
+        for (Attachment attachment : msg.getAttachments()) {
+            attachString += attachment.toString();
+        }
+        message.put("attachments", '[' + attachString + ']');
+        JSONObject json = new JSONObject();
+        json.put("message", message);
+        if (isBot) {
+            return sendMessage(msg, token, isBot);
+        } else if (HTTP.SendPOST(url, new JSONObject().put("token", token), json.toString()) != null) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
-    public boolean sendMessage(String text,User[] users) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+
     public boolean sendMessage(String text) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    public static Message[] getMessages(String tokenID,String groupID){
+
+    public static Message[] getMessages(String tokenID, String groupID) {
         Message[] messages = new Message[20];
         return messages;
     }
-    public Message[] getMessages(String groupID){
+
+    public Message[] getMessages(String groupID) {
         Message[] messages = new Message[20];
         return messages;
     }
-    public Message[] getMessages(){
+    /**
+     * To be implemented
+     * @return 
+     */
+    public Message[] getMessages() {
         Message[] messages = new Message[20];
         return messages;
     }
-    public boolean update(String attribute,int choice){
+
+    public boolean update(String attribute, int choice) {
         return false;
     }
 
@@ -82,5 +126,5 @@ public class GroupMe {
     public void setBaseGUID(String baseGUID) {
         this.baseGUID = baseGUID;
     }
-    
+
 }

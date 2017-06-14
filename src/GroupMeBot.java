@@ -1,3 +1,6 @@
+
+import org.json.JSONObject;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -33,10 +36,26 @@ public class GroupMeBot {
         return new GroupMeBot("placehold","placehold","placehold"); //should return a newly created bot
     }
     public boolean sendMessage(String text){
-        return GroupMe.sendMessage(text,this.botID,true);
+        return GroupMe.sendMessage(new Message(text),this.botID,true);
     }
     public boolean sendMessage(String text,User[] users){
-        return GroupMe.sendMessage(text,this.botID,users,true);
+        Message message = new Message(text);
+        JSONObject info = new JSONObject(); 
+        int count =0;
+        String loci[]= new String[users.length];
+        String userids[]= new String[users.length];
+        for(int i=0;i<users.length;i++){
+            userids[i] = users[i].getUserID();
+            loci[i] = "["+count+","+(users[i].getName().length()+1)+"]";
+            text = "@"+users[i]+" "+text;
+            count+= ((users[i].getName().length()+1)+2);
+        }
+        info.put("user_ids", JSONArray(userids));
+        info.put("loci", JSONArray(loci));
+        Attachment attachment = new Attachment(AttachmentType.MENTION,info);
+        message.setText(text);
+        message.addAttachment(attachment);
+        return GroupMe.sendMessage(message,this.botID,true);
     }
     
     
@@ -108,6 +127,10 @@ public class GroupMeBot {
      */
     public void setDMNotification(Boolean DMNotification) {
         this.DMNotification = DMNotification;
+    }
+
+    private boolean JSONArray(String[] userids) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

@@ -1,5 +1,6 @@
 
-import javafx.util.Pair;
+//import javafx.util.Pair;
+import org.json.JSONObject;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,6 +13,18 @@ import javafx.util.Pair;
  * @author Rider X2
  */
 class Attachment {
-    private Enum type;
-    private Pair[] keyValue;
+    private AttachmentType type;
+    private JSONObject attachments;
+    public Attachment(AttachmentType type,JSONObject info){
+        if(type ==AttachmentType.MENTION){
+            attachments.put("type", "mentions");
+            attachments.put("user_ids",info.getJSONArray("user_ids"));
+            attachments.put("loci",info.getJSONArray("loci"));
+        }
+        else{
+            System.out.println("Failed to Create");
+            return;
+        }
+        
+    }
 }
