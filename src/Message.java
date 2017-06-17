@@ -29,7 +29,7 @@ public class Message {
         this.attachments = new ArrayList<Attachment>();
         this.text =text;
         int end = new Random().nextInt(100000-1000)+1000;
-        this.source_guid =GroupMe.baseURL+end;
+        this.source_guid ="JAVALIBRARYBASED"+end;
     }
     public Message(String text, Attachment[] attachments) {
         this.attachments = new ArrayList<Attachment>();

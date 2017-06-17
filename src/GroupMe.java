@@ -24,6 +24,15 @@ public class GroupMe {
     private String groupID;
     private String baseGUID;
     /**
+     * 
+     * @param token the user access token
+     * @param groupID the id of the default group
+     * @param baseGUID A custom string to mark mod the guid 
+     */
+    public GroupMe(String token, String groupID,String baseGUID){
+        
+    }
+    /**
      * Sends a message to a given group via Groupme api
      * @param msg A message object
      * @param token This should be the botID
@@ -34,7 +43,7 @@ public class GroupMe {
         JSONObject json = new JSONObject();
         String url;
         if (isBot) {
-            url = baseURL + "/post";
+            url = baseURL + "/bots/post";
             json = new JSONObject()
                     .put("bot_id", token)
                     .put("text", msg.getText())
@@ -60,13 +69,10 @@ public class GroupMe {
     public static boolean sendMessage(Message msg, String token, String groupID, Boolean isBot) {
         String url = baseURL + "/groups/" + groupID + "/messages";
         JSONObject message = new JSONObject();
-        message.put("souce_id", msg.getSource_guid());
         message.put("text", msg.getText());
-        String attachString = "";
-        for (Attachment attachment : msg.getAttachments()) {
-            attachString += attachment.toString();
-        }
-        message.put("attachments", '[' + attachString + ']');
+        
+        message.put("attachments", msg.getAttachments());
+        message.put("source_guid", msg.getSource_guid());
         JSONObject json = new JSONObject();
         json.put("message", message);
         if (isBot) {
@@ -93,7 +99,7 @@ public class GroupMe {
      * @return 
      */
     public static Message[] getMessages(String tokenID, String groupID) {
-        Message[] messages = new Message[20];
+        Message[] messages =new Message[0];
         String url = baseURL + "/groups/" + groupID + "/messages";
         InputStream response =HTTP.sendGET(url, new JSONObject().put("token", tokenID));
         StringBuilder responseBld = new StringBuilder();
@@ -108,14 +114,18 @@ public class GroupMe {
                 while((jsonStr=read.readLine())!=null){
                     responseBld.append(jsonStr);
                 }
-                JSONObject json = new JSONObject(responseBld.toString());
-                int count =Integer.parseInt(json.getString("count"));
-                for (int i =0; i<count;i++){
-                    JSONObject messageI = json.getJSONObject("message");
+                JSONObject json = new JSONObject(responseBld.toString()).getJSONObject("response");
+                //System.out.println(json.toString());
+                JSONArray messageArray = json.getJSONArray("messages");
+                int count =messageArray.length();
+                messages = new Message[count];
+                int i =0;
+                for (Object message:messageArray){
+                    JSONObject messageI =(JSONObject)message;
                     messages[i] = new Message("");
-                    messages[i].setCreated_at(messageI.getString("created_at"));
-                    String[] favorited= new String[messageI.getJSONArray("favorited").length()];
-                    Iterator<?> favObj = messageI.getJSONArray("favorited").iterator();
+                    messages[i].setCreated_at(messageI.getInt("created_at")+"");
+                    String[] favorited= new String[messageI.getJSONArray("favorited_by").length()];
+                    Iterator<?> favObj = messageI.getJSONArray("favorited_by").iterator();
                     int z =0;
                     while(favObj.hasNext()){
                         favorited[z] =(String) favObj.next();
@@ -125,10 +135,12 @@ public class GroupMe {
                     messages[i].setGroupID(groupID);
                     messages[i].setId(messageI.getString("id"));
                     messages[i].setSource_guid(messageI.getString("source_guid"));
-                    messages[i].setSystem(Boolean.parseBoolean(messageI.getString("System")));
+                    messages[i].setSystem(messageI.getBoolean("system"));
                     messages[i].setText(messageI.getString("text"));
-                    //messages[i].setUser(user);
-                    //User code to be implemented
+                    User tempUser =new User(messageI.getString("name"),
+                    messageI.getString("user_id"));
+                    messages[i].setUser(tempUser);
+                    i++;
                 }
             } catch (IOException ex) {
                 Logger.getLogger(GroupMe.class.getName()).log(Level.SEVERE, null, ex);

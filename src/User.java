@@ -11,7 +11,10 @@
 class User {
     private String userID;
     private String name;
-
+    public User(String name, String ID){
+        this.name =name;
+        this.userID = ID;
+    }
     /**
      * @return the userID
      */

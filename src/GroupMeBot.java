@@ -19,18 +19,38 @@ public class GroupMeBot {
     private String callBackURL;
     private Boolean DMNotification;
     
-    
+    /**
+     * Create a bot object
+     * @param name the name of the bot
+     * @param botID the id given to the bot by GroupMe
+     * @param group the group the bot resides in
+     */
     public GroupMeBot(String name,String botID,String group){
         this.name = name;
         this.botID = botID;
         this.groupID = group;
     }
+    /**
+     *  Create a bot object
+     * @param name the name of the bot
+     * @param botID the id given to the bot by GroupMe
+     * @param group the group the bot resides in@param name
+     * @param avatar the url of the bot picture
+     * @param callback the url to send messages to
+     * @param DMNotification Boolean to represent if notifications are accepted
+     */
     public GroupMeBot(String name,String botID,String group,String avatar,String callback, Boolean DMNotification){
         this(name,botID,group);
         this.avatarURL = avatar;
         this.callBackURL = callback;
         this.DMNotification =DMNotification;
-    }
+    }/**
+     * Not implemented
+     * @param token the creator's token
+     * @param botName the name of the bot
+     * @param GroupID the id of the group to add the bot to
+     * @return 
+     */
     public static GroupMeBot createBot(String token, String botName, String GroupID){
         
         return new GroupMeBot("placehold","placehold","placehold"); //should return a newly created bot
