@@ -6,7 +6,7 @@
 
 /**
  *
- * @author Rider X2
+ * @author LowellDev
  */
 class User {
     private String userID;

@@ -10,7 +10,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author Rider X2
+ * @author LowellDev
  */
 class Attachment {
     private AttachmentType type;

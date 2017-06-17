@@ -6,7 +6,7 @@
 
 /**
  *
- * @author Rider X2
+ * @author LowellDev
  */
 public enum AttachmentType {
     IMAGE,SPLIT,EMOJI,LOCATION,MENTION

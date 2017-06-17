@@ -24,12 +24,18 @@ public class HTTP {
     public HTTP() {
 
     }
-
+    /**
+     * Send a post request 
+     * @param urlString the url to send to
+     * @param params the variables to add to the url
+     * @param data jsonString representing the data
+     * @return InputStream containing response
+     */
     public static InputStream SendPOST(String urlString, JSONObject params, String data) {
         URL url;
 //        System.out.println(urlString);
 //        System.out.println(data);
-//        System.out.println(data.toString());
+//        System.out.println("Parameters: "+params.toString());
         if (params != null) {
             urlString +="?";
             Iterator<?> keys = params.keys();
@@ -42,6 +48,7 @@ public class HTTP {
         }
         try {
             url = new URL(urlString);
+            System.out.println("Query: "+urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
@@ -52,7 +59,7 @@ public class HTTP {
                 String  key =(String)keys.next();
                 connection.setRequestProperty(key, (String)params.getString(key));
             }*/
-            //System.out.println(url.getQuery());
+
             connection.getOutputStream().write(data.getBytes("UTF-8"));
             connection.getOutputStream().flush();
             if (connection.getResponseCode() >= 200 && connection.getResponseCode() < 300) {
@@ -65,11 +72,17 @@ public class HTTP {
             System.out.println("Malformed URL");
         } catch (IOException ex) {
             Logger.getLogger(HTTP.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("IO Exception");
         }
 
         return null;
     }
-
+    /**
+     * Send a GET request
+     * @param urlString the url to send the request to
+     * @param params the variables to add to the url
+     * @return InputStream containing response
+     */
     public static InputStream sendGET(String urlString, JSONObject params) {
         URL url;
         if (params != null) {

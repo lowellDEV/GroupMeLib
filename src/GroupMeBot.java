@@ -1,37 +1,47 @@
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
- * @author Rider X2
+ * @author LowellDev
  */
 public class GroupMeBot {
+
     private String name;
     private String botID;
     private String groupID;
     private String avatarURL;
     private String callBackURL;
     private Boolean DMNotification;
-    
+
     /**
      * Create a bot object
+     *
      * @param name the name of the bot
      * @param botID the id given to the bot by GroupMe
      * @param group the group the bot resides in
      */
-    public GroupMeBot(String name,String botID,String group){
+    public GroupMeBot(String name, String botID, String group) {
         this.name = name;
         this.botID = botID;
         this.groupID = group;
     }
+
     /**
-     *  Create a bot object
+     * Create a bot object
+     *
      * @param name the name of the bot
      * @param botID the id given to the bot by GroupMe
      * @param group the group the bot resides in@param name
@@ -39,46 +49,90 @@ public class GroupMeBot {
      * @param callback the url to send messages to
      * @param DMNotification Boolean to represent if notifications are accepted
      */
-    public GroupMeBot(String name,String botID,String group,String avatar,String callback, Boolean DMNotification){
-        this(name,botID,group);
+    public GroupMeBot(String name, String botID, String group, String avatar, String callback, Boolean DMNotification) {
+        this(name, botID, group);
         this.avatarURL = avatar;
         this.callBackURL = callback;
-        this.DMNotification =DMNotification;
-    }/**
+        this.DMNotification = DMNotification;
+    }
+
+    /**
      * Not implemented
+     *
      * @param token the creator's token
      * @param botName the name of the bot
      * @param GroupID the id of the group to add the bot to
-     * @return 
+     * @return the new bot [null if failed]
      */
-    public static GroupMeBot createBot(String token, String botName, String GroupID){
-        
-        return new GroupMeBot("placehold","placehold","placehold"); //should return a newly created bot
-    }
-    public boolean sendMessage(String text){
-        return GroupMe.sendMessage(new Message(text),this.botID,true);
-    }
-    public boolean sendMessage(String text,User[] users){
-        Message message = new Message(text);
-        JSONObject info = new JSONObject(); 
-        int count =0;
-        String loci[]= new String[users.length];
-        String userids[]= new String[users.length];
-        for(int i=0;i<users.length;i++){
-            userids[i] = users[i].getUserID();
-            loci[i] = "["+count+","+(users[i].getName().length()+1)+"]";
-            text = "@"+users[i]+" "+text;
-            count+= ((users[i].getName().length()+1)+2);
+    public static GroupMeBot createBot(String token, String botName, String GroupID) {
+        try {
+            JSONObject cmd = new JSONObject()
+                    .put("bot", new JSONObject()
+                            .put("name", botName)
+                            .put("group_id", GroupID));
+            String url = "https://api.groupme.com/v3/bots";
+            InputStream response = HTTP.SendPOST(url, new JSONObject().put("token", token), cmd.toString());
+            if (response == null) {
+                return null;
+            }
+            StringBuilder responseBld = new StringBuilder();
+            BufferedReader read = new BufferedReader(new InputStreamReader(response));
+            String jsonStr;
+            while ((jsonStr = read.readLine()) != null) {
+                responseBld.append(jsonStr);
+            }
+            JSONObject json = new JSONObject(responseBld.toString()).getJSONObject("response").getJSONObject("bot");
+            System.out.println("Response: " + json.toString());
+            return new GroupMeBot(json.getString("name"), json.getString("bot_id"), json.getString("group_id")); //should return a newly created bot
+        } catch (IOException ex) {
+            Logger.getLogger(GroupMeBot.class.getName()).log(Level.SEVERE, null, ex);
         }
-        info.put("user_ids", JSONArray(userids));
-        info.put("loci", JSONArray(loci));
-        Attachment attachment = new Attachment(AttachmentType.MENTION,info);
+        return null;
+    }
+
+    public static Boolean destroy(String token,String botID) {
+    return HTTP.SendPOST(GroupMe.baseURL+"/bots/destroy", 
+            new JSONObject().put("token",token),
+            (new JSONObject().put("bot_id",botID)).toString())!=null;
+    }
+
+    /**
+     * Send a message from the bot
+     *
+     * @param text the message to send
+     * @return success/fail
+     */
+    public boolean sendMessage(String text) {
+        return GroupMe.sendMessage(new Message(text), this.botID, true);
+    }
+
+    /**
+     * Have the bot send a message
+     *
+     * @param text the message to send
+     * @param users the users to mention
+     * @return success/fail
+     */
+    public boolean sendMessage(String text, User[] users) {
+        Message message = new Message(text);
+        JSONObject info = new JSONObject();
+        int count = 0;
+        String loci[] = new String[users.length];
+        String userids[] = new String[users.length];
+        for (int i = 0; i < users.length; i++) {
+            userids[i] = users[i].getUserID();
+            loci[i] = "[" + count + "," + (users[i].getName().length() + 1) + "]";
+            text = "@" + users[i] + " " + text;
+            count += ((users[i].getName().length() + 1) + 2);
+        }
+        info.put("user_ids", new JSONArray(userids));
+        info.put("loci", new JSONArray(loci));
+        Attachment attachment = new Attachment(AttachmentType.MENTION, info);
         message.setText(text);
         message.addAttachment(attachment);
-        return GroupMe.sendMessage(message,this.botID,true);
+        return GroupMe.sendMessage(message, this.botID, true);
     }
-    
-    
+
     /**
      * @return the name
      */
@@ -149,8 +203,8 @@ public class GroupMeBot {
         this.DMNotification = DMNotification;
     }
 
-    private boolean JSONArray(String[] userids) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    String getBotID() {
+        return botID; //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

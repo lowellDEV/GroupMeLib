@@ -10,7 +10,7 @@ import java.util.Random;
 
 /**
  *
- * @author Rider X2
+ * @author LowellDEv
  */
 
 public class Message {
